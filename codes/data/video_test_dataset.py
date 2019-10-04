@@ -26,7 +26,9 @@ class VideoTestDataset(data.Dataset):
             raise ValueError('No need to use LMDB during validation/test.')
         #### Generate data info and cache data
         self.imgs_LQ, self.imgs_GT = {}, {}
-        if opt['name'].lower() in ['vid4', 'reds4']:
+
+        self.need_GT = self.GT_root is not None
+        if need_GT:
             subfolders_LQ = util.glob_file_list(self.LQ_root)
             subfolders_GT = util.glob_file_list(self.GT_root)
             for subfolder_LQ, subfolder_GT in zip(subfolders_LQ, subfolders_GT):
@@ -50,15 +52,29 @@ class VideoTestDataset(data.Dataset):
                 if self.cache_data:
                     self.imgs_LQ[subfolder_name] = util.read_img_seq(img_paths_LQ)
                     self.imgs_GT[subfolder_name] = util.read_img_seq(img_paths_GT)
-        elif opt['name'].lower() in ['vimeo90k-test']:
-            pass  # TODO
         else:
-            raise ValueError(
-                'Not support video test dataset. Support Vid4, REDS4 and Vimeo90k-Test.')
+            subfolders_LQ = util.glob_file_list(self.LQ_root)
+            for subfolder_LQ, subfolder_GT in zip(subfolders_LQ, subfolders_GT):
+                subfolder_name = osp.basename(subfolder_LQ)
+                img_paths_LQ = util.glob_file_list(subfolder_LQ)
+                max_idx = len(img_paths_LQ)
+
+                self.data_info['path_LQ'].extend(img_paths_LQ)
+                self.data_info['folder'].extend([subfolder_name] * max_idx)
+                for i in range(max_idx):
+                    self.data_info['idx'].append('{}/{}'.format(i, max_idx))
+                border_l = [0] * max_idx
+                for i in range(self.half_N_frames):
+                    border_l[i] = 1
+                    border_l[max_idx - i - 1] = 1
+                self.data_info['border'].extend(border_l)
+
+                if self.cache_data:
+                    self.imgs_LQ[subfolder_name] = util.read_img_seq(img_paths_LQ)
 
     def __getitem__(self, index):
-        # path_LQ = self.data_info['path_LQ'][index]
-        # path_GT = self.data_info['path_GT'][index]
+        path_LQ = self.data_info['path_LQ'][index]
+        path_GT = self.data_info['path_GT'][index] if self.need_GT else None
         folder = self.data_info['folder'][index]
         idx, max_idx = self.data_info['idx'][index].split('/')
         idx, max_idx = int(idx), int(max_idx)
@@ -68,7 +84,7 @@ class VideoTestDataset(data.Dataset):
             select_idx = util.index_generation(idx, max_idx, self.opt['N_frames'],
                                                padding=self.opt['padding'])
             imgs_LQ = self.imgs_LQ[folder].index_select(0, torch.LongTensor(select_idx))
-            img_GT = self.imgs_GT[folder][idx]
+            img_GT = self.imgs_GT[folder][idx] if self.need_GT else None
         else:
             pass  # TODO
 
@@ -83,4 +99,4 @@ class VideoTestDataset(data.Dataset):
         }
 
     def __len__(self):
-        return len(self.data_info['path_GT'])
+        return len(self.data_info['path_LQ'])
