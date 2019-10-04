@@ -28,7 +28,7 @@ class VideoTestDataset(data.Dataset):
         self.imgs_LQ, self.imgs_GT = {}, {}
 
         self.need_GT = self.GT_root is not None
-        if need_GT:
+        if self.need_GT:
             subfolders_LQ = util.glob_file_list(self.LQ_root)
             subfolders_GT = util.glob_file_list(self.GT_root)
             for subfolder_LQ, subfolder_GT in zip(subfolders_LQ, subfolders_GT):
