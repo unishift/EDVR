@@ -54,7 +54,7 @@ class VideoTestDataset(data.Dataset):
                     self.imgs_GT[subfolder_name] = util.read_img_seq(img_paths_GT)
         else:
             subfolders_LQ = util.glob_file_list(self.LQ_root)
-            for subfolder_LQ, subfolder_GT in zip(subfolders_LQ, subfolders_GT):
+            for subfolder_LQ in subfolders_LQ:
                 subfolder_name = osp.basename(subfolder_LQ)
                 img_paths_LQ = util.glob_file_list(subfolder_LQ)
                 max_idx = len(img_paths_LQ)
