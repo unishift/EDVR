@@ -69,6 +69,7 @@ for test_loader in test_loaders:
             save_img_path = osp.join(subfolder_res_path, img_name + '.png')
         util.save_img(sr_img, save_img_path)
 
+        img_fullname = osp.join(subfolder_name, img_name)
         # calculate PSNR and SSIM
         if need_GT:
             gt_img = util.tensor2img(visuals['GT'])
@@ -88,11 +89,11 @@ for test_loader in test_loaders:
                 test_results['ssim_y'].append(ssim_y)
                 logger.info(
                     '{:20s} - PSNR: {:.6f} dB; SSIM: {:.6f}; PSNR_Y: {:.6f} dB; SSIM_Y: {:.6f}.'.
-                    format(img_name, psnr, ssim, psnr_y, ssim_y))
+                    format(img_fullname, psnr, ssim, psnr_y, ssim_y))
             else:
-                logger.info('{:20s} - PSNR: {:.6f} dB; SSIM: {:.6f}.'.format(img_name, psnr, ssim))
+                logger.info('{:20s} - PSNR: {:.6f} dB; SSIM: {:.6f}.'.format(img_fullname, psnr, ssim))
         else:
-            logger.info(img_name)
+            logger.info(img_fullname)
 
     if need_GT:  # metrics
         # Average PSNR/SSIM results
