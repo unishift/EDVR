@@ -50,7 +50,9 @@ for test_loader in test_loaders:
         need_GT = False if test_loader.dataset.opt['dataroot_GT'] is None else True
         model.feed_data(data, need_GT=need_GT)
         img_path = data['GT_path'][0] if need_GT else data['LQ_path'][0]
-        img_name = osp.splitext(osp.basename(img_path))[0]
+        subfolder_path, img_name = osp.split(img_path)
+        subfolder_name = osp.basename(subfolder_path)
+        img_name = osp.splitext(img_name)[0]
 
         model.test()
         visuals = model.get_current_visuals(need_GT=need_GT)
@@ -59,10 +61,12 @@ for test_loader in test_loaders:
 
         # save images
         suffix = opt['suffix']
+        subfolder_res_path = osp.join(dataset_dir, subfolder_name)
+        util.mkdir(subfolder_res_path)
         if suffix:
-            save_img_path = osp.join(dataset_dir, img_name + suffix + '.png')
+            save_img_path = osp.join(subfolder_res_path, img_name + suffix + '.png')
         else:
-            save_img_path = osp.join(dataset_dir, img_name + '.png')
+            save_img_path = osp.join(subfolder_res_path, img_name + '.png')
         util.save_img(sr_img, save_img_path)
 
         # calculate PSNR and SSIM
