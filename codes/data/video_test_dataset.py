@@ -88,15 +88,24 @@ class VideoTestDataset(data.Dataset):
         else:
             pass  # TODO
 
-        return {
-            'LQs': imgs_LQ,
-            'GT': img_GT,
-            'folder': folder,
-            'idx': self.data_info['idx'][index],
-            'border': border,
-            'LQ_path': path_LQ,
-            'GT_path': path_GT,
-        }
+        if self.need_GT:
+            return {
+                'LQs': imgs_LQ,
+                'GT': img_GT,
+                'folder': folder,
+                'idx': self.data_info['idx'][index],
+                'border': border,
+                'LQ_path': path_LQ,
+                'GT_path': path_GT,
+            }
+        else:
+            return {
+                'LQs': imgs_LQ,
+                'folder': folder,
+                'idx': self.data_info['idx'][index],
+                'border': border,
+                'LQ_path': path_LQ,
+            }
 
     def __len__(self):
         return len(self.data_info['path_LQ'])
