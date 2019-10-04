@@ -77,7 +77,9 @@ class VideoTestDataset(data.Dataset):
             'GT': img_GT,
             'folder': folder,
             'idx': self.data_info['idx'][index],
-            'border': border
+            'border': border,
+            'LQ_path': path_LQ,
+            'GT_path': path_GT,
         }
 
     def __len__(self):
