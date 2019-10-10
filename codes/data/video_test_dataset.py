@@ -16,6 +16,8 @@ class VideoTestDataset(data.Dataset):
 
     def __init__(self, opt):
         super(VideoTestDataset, self).__init__()
+        self.current_folder = None
+        self.img_buf = None
         self.opt = opt
         self.cache_data = opt['cache_data']
         self.half_N_frames = opt['N_frames'] // 2
@@ -86,7 +88,23 @@ class VideoTestDataset(data.Dataset):
             imgs_LQ = self.imgs_LQ[folder].index_select(0, torch.LongTensor(select_idx))
             img_GT = self.imgs_GT[folder][idx] if self.need_GT else None
         else:
-            pass  # TODO
+            if self.current_folder is None or self.current_folder != folder:
+                self.current_folder = folder
+                img_paths_LQ = [self.data_info['path_LQ'][i] for i in range(index, index + max_idx)
+                                                                if self.data_info['folder'][i] == folder]
+                self.img_buf = {'LQ': util.read_img_seq(img_paths_LQ)}
+
+                if self.need_GT:
+                    img_paths_GT = [self.data_info['path_GT'][i] for i in range(index, index + max_idx)
+                                                                    if self.data_info['folder'][i] == folder]
+                    self.img_buf['GT'] = util.read_img_seq(img_paths_GT)
+
+
+            select_idx = util.index_generation(idx, max_idx, self.opt['N_frames'],
+                                               padding=self.opt['padding'])
+            imgs_LQ = self.img_buf['LQ'].index_select(0, torch.LongTensor(select_idx))
+            img_GT = self.img_buf['GT'][idx] if self.need_GT else None
+
 
         if self.need_GT:
             return {
