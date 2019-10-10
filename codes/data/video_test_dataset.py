@@ -52,8 +52,8 @@ class VideoTestDataset(data.Dataset):
                 self.data_info['border'].extend(border_l)
 
                 if self.cache_data:
-                    self.imgs_LQ[subfolder_name] = util.read_img_seq(img_paths_LQ)
-                    self.imgs_GT[subfolder_name] = util.read_img_seq(img_paths_GT)
+                    self.imgs_LQ[subfolder_name] = util.read_img_seq(img_paths_LQ, 16)
+                    self.imgs_GT[subfolder_name] = util.read_img_seq(img_paths_GT, 16)
         else:
             subfolders_LQ = util.glob_file_list(self.LQ_root)
             for subfolder_LQ in subfolders_LQ:
@@ -72,7 +72,7 @@ class VideoTestDataset(data.Dataset):
                 self.data_info['border'].extend(border_l)
 
                 if self.cache_data:
-                    self.imgs_LQ[subfolder_name] = util.read_img_seq(img_paths_LQ)
+                    self.imgs_LQ[subfolder_name] = util.read_img_seq(img_paths_LQ, 16)
 
     def __getitem__(self, index):
         path_LQ = self.data_info['path_LQ'][index]
@@ -92,12 +92,12 @@ class VideoTestDataset(data.Dataset):
                 self.current_folder = folder
                 img_paths_LQ = [self.data_info['path_LQ'][i] for i in range(index, index + max_idx)
                                                                 if self.data_info['folder'][i] == folder]
-                self.img_buf = {'LQ': util.read_img_seq(img_paths_LQ)}
+                self.img_buf = {'LQ': util.read_img_seq(img_paths_LQ, 16)}
 
                 if self.need_GT:
                     img_paths_GT = [self.data_info['path_GT'][i] for i in range(index, index + max_idx)
                                                                     if self.data_info['folder'][i] == folder]
-                    self.img_buf['GT'] = util.read_img_seq(img_paths_GT)
+                    self.img_buf['GT'] = util.read_img_seq(img_paths_GT, 16)
 
 
             select_idx = util.index_generation(idx, max_idx, self.opt['N_frames'],

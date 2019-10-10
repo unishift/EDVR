@@ -72,7 +72,7 @@ def _read_img_lmdb(env, key, size):
     return img
 
 
-def read_img(env, path, size=None):
+def read_img(env, path, size=None, mul=1):
     """read image by cv2 or from lmdb
     return: Numpy float32, HWC, BGR, [0,1]"""
     if env is None:  # img
@@ -85,13 +85,20 @@ def read_img(env, path, size=None):
     # some images have 4 channels
     if img.shape[2] > 3:
         img = img[:, :, :3]
+
+    if img.shape[0] % mul != 0 or img.shape[1] % mul != 0:
+        bottom_border = mul - img.shape[0] % mul
+        right_border = mul - img.shape[1] % mul
+        img = cv2.copyMakeBorder(img, 0, bottom_border, 0, right_border, cv2.BORDER_CONSTANT, 0)
+
     return img
 
 
-def read_img_seq(path):
+def read_img_seq(path, mul=1):
     """Read a sequence of images from a given folder path
     Args:
         path (list/str): list of image paths/image folder path
+        mul: image's height and width should be divisible by that number
 
     Returns:
         imgs (Tensor): size (T, C, H, W), RGB, [0, 1]
@@ -100,7 +107,7 @@ def read_img_seq(path):
         img_path_l = path
     else:
         img_path_l = sorted(glob.glob(os.path.join(path, '*')))
-    img_l = [read_img(None, v) for v in img_path_l]
+    img_l = [read_img(None, v, mul=mul) for v in img_path_l]
     # stack to Torch tensor
     imgs = np.stack(img_l, axis=0)
     imgs = imgs[:, :, :, [2, 1, 0]]
